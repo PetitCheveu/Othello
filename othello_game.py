@@ -2,14 +2,14 @@ import copy
 import time
 import sys
 
-# Initialisation du plateau de jeu
+# Initialization of the board
 def init_board():
     board = [[' ' for _ in range(8)] for _ in range(8)]
     board[3][3], board[4][4] = 'W', 'W'
     board[3][4], board[4][3] = 'B', 'B'
     return board
 
-# Affichage du plateau de jeu
+# Displaying the board
 def display_board(board):
     print("  0 1 2 3 4 5 6 7")
     for i, row in enumerate(board):
@@ -18,7 +18,7 @@ def display_board(board):
             print(cell, end=' ')
         print()
 
-# Vérification de la validité d'un mouvement
+# Checking the validity of a move
 def is_valid_move(board, x, y, player):
     opponent = 'W' if player == 'B' else 'B'
     if board[x][y] != ' ':
@@ -44,7 +44,7 @@ def is_valid_move(board, x, y, player):
     
     return len(flipped_cells) > 0, flipped_cells
 
-# Appliquer un mouvement sur le plateau
+# Applying a move on the board
 def make_move(board, x, y, player):
     is_valid, flipped_cells = is_valid_move(board, x, y, player)
     if is_valid:
@@ -53,20 +53,20 @@ def make_move(board, x, y, player):
             board[fx][fy] = player
     return is_valid
 
-# Fonction d'évaluation simple
+# Simple evaluation function
 def evaluate_board(board, player):
     player_score = sum(cell == player for row in board for cell in row)
     opponent_score = sum(cell != ' ' and cell != player for row in board for cell in row)
     return player_score - opponent_score
 
-# Mémoire des états déjà traités pour éviter les calculs redondants
+# Memory for states already processed to avoid redundant calculations
 memo = {}
 
-# Algorithme Min-Max avec time-out et mémoire
+# Min-Max algorithm with time-out and memory
 def minmax_with_memory(board, depth, maximizing, player, timeout):
     if time.time() > timeout:
         return None, None
-    
+
     board_str = ''.join(''.join(row) for row in board) + player
     if board_str in memo:
         return memo[board_str]
@@ -75,7 +75,7 @@ def minmax_with_memory(board, depth, maximizing, player, timeout):
         score = evaluate_board(board, player)
         memo[board_str] = score, None
         return score, None
-    
+
     opponent = 'W' if player == 'B' else 'B'
     best_move = None
     
@@ -108,7 +108,7 @@ def minmax_with_memory(board, depth, maximizing, player, timeout):
         memo[board_str] = min_eval, best_move
         return min_eval, best_move
     
-# Fonction pour récupérer le mouvement du joueur humain
+# Get the human move
 def get_human_move(board, player):
     while True:
         try:
@@ -121,7 +121,7 @@ def get_human_move(board, player):
         except ValueError:
             print("Invalid input. Please enter two integers separated by a space.")
 
-# Fonction principale pour jouer au jeu
+# Main function to play the game human vs AI
 def play_game():
     board = init_board()
     player_turn = 'W'
@@ -157,7 +157,7 @@ def play_game():
         
         player_turn = 'B' if player_turn == 'W' else 'W'
 
-# Fonction principale pour jouer au jeu IA contre IA
+# Main function to play the game AI vs AI
 def play_game_ai_vs_ai():
     board = init_board()
     player_turn = 'W'
@@ -165,18 +165,23 @@ def play_game_ai_vs_ai():
     while True:
         display_board(board)
         print(f"{player_turn}'s turn:")
-        timeout = time.time() + 2  # 2 secondes de time-out pour l'IA
+        timeout = time.time() + 2  # 2-second time-out for AI
         _, (x, y) = minmax_with_memory(board, 3, player_turn == 'W', player_turn, timeout)
         if x is None and y is None:
             print(f"{player_turn} timeout. Game over!")
             break
+        valid_move = make_move(board, x, y, player_turn)
         
-        make_move(board, x, y, player_turn)
-        
-        # Pause pour faciliter l'analyse
+        # Display the attempted move by the AI
+        if not valid_move:
+            print(f"AI attempted an invalid move at ({x}, {y}).")
+        else:
+            print(f"AI placed at ({x}, {y}).")
+
+        # Pause for ease of analysis
         time.sleep(1)
-        
-        # Vérification de la fin du jeu
+
+        # Checking for the end of the game
         if all(cell != ' ' for row in board for cell in row):
             w_score = sum(cell == 'W' for row in board for cell in row)
             b_score = sum(cell == 'B' for row in board for cell in row)
@@ -188,10 +193,10 @@ def play_game_ai_vs_ai():
             else:
                 print("It's a tie!")
             break
-        
+
         player_turn = 'B' if player_turn == 'W' else 'W'
 
-# Jouer au jeu
+# Play the game
 if __name__ == '__main__':
     mode = input("Choose game mode (human or ai): ")
     if mode == 'human':
