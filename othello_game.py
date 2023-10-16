@@ -20,29 +20,46 @@ def display_board(board):
 
 # Vérification de la validité d'un mouvement
 def is_valid_move(board, x, y, player):
+    # Détermine la couleur de l'adversaire
     opponent = 'W' if player == 'B' else 'B'
+
+    # Vérifie si la case est déjà occupée
     if board[x][y] != ' ':
-        return False, []
-    
+        return False, []  # Le coup n'est pas valide, pas de cellules retournées
+
+    # Liste des huit directions possibles (voisins)
     directions = [(dx, dy) for dx in [-1, 0, 1] for dy in [-1, 0, 1] if dx != 0 or dy != 0]
+
+    # Liste pour stocker les cellules à retourner
     flipped_cells = []
-    
+
+    # Parcours de chaque direction possible
     for dx, dy in directions:
+        # Initialise une liste pour les cellules à retourner dans cette direction
         temp_flips = []
+        # Déplacement initial à partir de la case de départ (x, y)
         nx, ny = x + dx, y + dy
+
+        # Tant que les coordonnées sont à l'intérieur du plateau
         while 0 <= nx < 8 and 0 <= ny < 8:
             if board[nx][ny] == opponent:
+                # Ajoute les coordonnées de l'adversaire à la liste temporaire
                 temp_flips.append((nx, ny))
             elif board[nx][ny] == player:
                 if temp_flips:
+                    # S'il y a des cellules adverses entre les cellules du joueur actuel,
+                    # ajoute-les à la liste des cellules à retourner
                     flipped_cells.extend(temp_flips)
                 break
             else:
-                break
+                break  # La case est vide, donc le coup n'est pas valide
+            # Met à jour les coordonnées pour passer à la case suivante dans la direction
             nx += dx
             ny += dy
-    
+
+    # Le coup est valide s'il y a des cellules à retourner
     return len(flipped_cells) > 0, flipped_cells
+
 
 # Appliquer un mouvement sur le plateau
 def make_move(board, x, y, player):
@@ -61,6 +78,17 @@ def evaluate_board(board, player):
 
 # Mémoire des états déjà traités pour éviter les calculs redondants
 memo = {}
+
+def has_valid_move(board, player):
+    taille_grille = len(board)
+    
+    for row in range(taille_grille):
+        for col in range(taille_grille):
+            if is_valid_move(board, row, col, player)[0]:
+                return True
+    
+    return False
+
 
 # Algorithme Min-Max avec time-out et mémoire
 def minmax_with_memory(board, depth, maximizing, player, timeout):
@@ -192,12 +220,12 @@ def play_game_ai_vs_ai():
         player_turn = 'B' if player_turn == 'W' else 'W'
 
 # Jouer au jeu
-if __name__ == '__main__':
-    mode = input("Choose game mode (human or ai): ")
-    if mode == 'human':
-        play_game()
-    elif mode == 'ai':
-        play_game_ai_vs_ai()
-    else:
-        print("Invalid mode. Exiting.")
-        sys.exit(1)
+# if __name__ == '__main__':
+#     mode = input("Choose game mode (human or ai): ")
+#     if mode == 'human':
+#         play_game()
+#     elif mode == 'ai':
+#         play_game_ai_vs_ai()
+#     else:
+#         print("Invalid mode. Exiting.")
+#         sys.exit(1)
