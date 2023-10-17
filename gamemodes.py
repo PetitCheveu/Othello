@@ -91,10 +91,11 @@ def afficher_bouton_rejouer():
     retour_texte_rect.center = (largeur - 60, hauteur - 40)
     fenetre.blit(retour_texte, retour_texte_rect)
  
-def afficher_victoire(player):
+def afficher_victoire(board, player):
     # Créez un rectangle pour afficher le message de victoire
     victoire_rect = pygame.Rect(0, hauteur - 100, largeur, 50)
     
+    afficher_grille(board)
     # Remplissez le rectangle avec une couleur de fond
     pygame.draw.rect(fenetre, vert, victoire_rect)
     
@@ -169,11 +170,14 @@ def jeuPvP():
         if not othello_game.has_valid_move(board, 'B') and not othello_game.has_valid_move(board, 'W'):
             print("Fin de la partie car plus de coups possibles")
             if pions_noirs > pions_blancs:
-                afficher_victoire('Noir')
+                afficher_victoire(board, 'Noir')
+                afficher_info(tour, pions_noirs, pions_blancs, player_turn)
             elif pions_blancs > pions_noirs:
-                afficher_victoire('Blanc')
+                afficher_victoire(board, 'Blanc')
+                afficher_info(tour, pions_noirs, pions_blancs, player_turn)
             else:
-                afficher_victoire('Égalité')
+                afficher_victoire(board, 'Égalité')
+                afficher_info(tour, pions_noirs, pions_blancs, player_turn)
             pygame.display.flip()
             pygame.time.delay(5000)  # Pause de 3 secondes pour afficher le résultat
             # return  # Sortez de la boucle de jeu
@@ -222,11 +226,14 @@ def jeuPvAI():
                     if all(cell != ' ' for row in board for cell in row) or (not othello_game.has_valid_move(board, 'B') and not othello_game.has_valid_move(board, 'W')):
                         print("Fin de la partie car plus de coups possibles")
                         if pions_noirs > pions_blancs:
-                            afficher_victoire('Noir')
+                            afficher_victoire(board, 'Noir')
+                            afficher_info(tour, pions_noirs, pions_blancs, player_turn)
                         elif pions_blancs > pions_noirs:
-                            afficher_victoire('Blanc')
+                            afficher_victoire(board, 'Blanc')
+                            afficher_info(tour, pions_noirs, pions_blancs, player_turn)
                         else:
-                            afficher_victoire('Égalité')
+                            afficher_victoire(board, 'Égalité')
+                            afficher_info(tour, pions_noirs, pions_blancs, player_turn)
                         pygame.display.flip()
                         pygame.time.delay(5000)  # Pause de 5 secondes pour afficher le résultat
                         break  # Fin de la partie
@@ -234,7 +241,7 @@ def jeuPvAI():
                         if othello_game.has_valid_move(board, 'B'):
                             player_turn = 'B'
                         elif othello_game.has_valid_move(board, 'W'):
-                            print("On passe le tour du joueur Noi")
+                            print("On passe le tour du joueur Noir")
                             player_turn = 'W'
                         else :
                             print("fin de partie")
@@ -252,14 +259,15 @@ def jeuPvAI():
                     afficher_info(tour, pions_noirs, pions_blancs, player_turn)
                     pygame.display.flip()
                     # pygame.time.delay(500)  # Pause de 1 seconde pour afficher le résultat
-                    
 
         if player_turn == 'B':
             timeout = time.time() + 5  # 2 secondes de time-out pour l'IA
-            result = othello_game.minmax_with_memory(board, 5, True, 'B', timeout)
+            possible_moves = othello_game.positions_jouables(board, 'B')
+            result = othello_game.minmax_with_memory(board, 3, True, 'B', timeout, possible_moves)
             print(result)
             if result is None or result[1] is None or result[1][0] is None or result[1][1] is None or result[0] is None:
-                afficher_victoire('Timeout')
+                afficher_victoire(board, 'Timeout')
+                afficher_info(tour, pions_noirs, pions_blancs, player_turn)
                 pygame.display.flip()
                 print("AI timeout. Human wins!")
                 pygame.time.delay(10000)  # Pause de 5 secondes pour afficher le résultat
@@ -280,11 +288,14 @@ def jeuPvAI():
                 afficher_grille(board)
                 afficher_info(tour, pions_noirs, pions_blancs, player_turn)
                 if pions_blancs > pions_noirs : 
-                    afficher_victoire('Blanc')
+                    afficher_victoire(board, 'Blanc')
+                    afficher_info(tour, pions_noirs, pions_blancs, player_turn)
                 elif pions_noirs > pions_blancs : 
-                    afficher_victoire('Noir')
+                    afficher_victoire(board, 'Noir')
+                    afficher_info(tour, pions_noirs, pions_blancs, player_turn)
                 elif pions_blancs == pions_noirs :
-                    afficher_victoire('Egalité')
+                    afficher_victoire(board, 'Egalité')
+                    afficher_info(tour, pions_noirs, pions_blancs, player_turn)
                 
                 pygame.display.flip()
                 pygame.time.delay(5000)  # Pause de 5 secondes pour afficher le résultat

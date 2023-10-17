@@ -206,65 +206,55 @@ def has_valid_move(board, player):
 
 MAX_SCORE = 1000000  # Choisissez une valeur appropriée pour MAX_SCORE
 
-def minmax_with_memory(board, depth, maximizing, player, timeout):
-    if depth == 0 :
+def minmax_with_memory(board, depth, maximizing, player, timeout, possible_moves):
+    if depth == 0:
         return evaluate_board(board, player), None
-    
+
     if time.time() >= timeout:
-        possible_moves = []  # Initialise la liste des coups possibles
-        for x in range(8):
-            for y in range(8):
-                new_board = copy.deepcopy(board)
-                if make_move(new_board, x, y, player):
-                    possible_moves.append((x, y))
-        if not possible_moves:  # Si aucun mouvement n'est possible, retournez (0, 0)
-            print("oups je suis passé dans cette boucle impossible")
+        if not possible_moves:
             return evaluate_board(board, player), (-1, -1)
+        
         best_move = possible_moves[0]
-        print("C'était chaud, mais on va afficher : ", best_move)
         return evaluate_board(board, player), best_move
 
     board_str = ''.join(''.join(row) for row in board) + player
-    
+
     if board_str in memo:
         return memo[board_str]
 
     opponent = 'W' if player == 'B' else 'B'
     best_move = None
-    possible_moves = []
 
     if maximizing:
         max_eval = -MAX_SCORE
-        for x in range(8):
-            for y in range(8):
-                new_board = copy.deepcopy(board)
-                if make_move(new_board, x, y, player):
-                    eval_value, _ = minmax_with_memory(new_board, depth - 1, False, player, timeout)
-                    if eval_value is None:
-                        possible_moves.append((x, y))
-                    elif eval_value > max_eval:
-                        max_eval = eval_value
-                        best_move = (x, y)
-        if best_move is None and possible_moves:
-            print("No best move found, plays : ", possible_moves[0])
+        for move in possible_moves:
+            x, y = move
+            new_board = copy.deepcopy(board)
+            if make_move(new_board, x, y, player):
+                eval_value, _ = minmax_with_memory(new_board, depth - 1, False, player, timeout, possible_moves)
+                if eval_value is None:
+                    possible_moves.append((x, y))
+                elif eval_value > max_eval:
+                    max_eval = eval_value
+                    best_move = (x, y)
+        if best_move is None:
             best_move = possible_moves[0]
             max_eval = evaluate_board(board, player)
         memo[board_str] = max_eval, best_move
         return max_eval, best_move
     else:
         min_eval = MAX_SCORE
-        for x in range(8):
-            for y in range(8):
-                new_board = copy.deepcopy(board)
-                if make_move(new_board, x, y, opponent):
-                    eval_value, _ = minmax_with_memory(new_board, depth - 1, True, player, timeout)
-                    if eval_value is None:
-                        possible_moves.append((x, y))
-                    elif eval_value < min_eval:
-                        min_eval = eval_value
-                        best_move = (x, y)
-        if best_move is None and possible_moves:
-            print("No best move found, plays : ", possible_moves[0])
+        for move in possible_moves:
+            x, y = move
+            new_board = copy.deepcopy(board)
+            if make_move(new_board, x, y, opponent):
+                eval_value, _ = minmax_with_memory(new_board, depth - 1, True, player, timeout, possible_moves)
+                if eval_value is None:
+                    possible_moves.append((x, y))
+                elif eval_value < min_eval:
+                    min_eval = eval_value
+                    best_move = (x, y)
+        if best_move is None:
             best_move = possible_moves[0]
             min_eval = evaluate_board(board, player)
         memo[board_str] = min_eval, best_move
@@ -284,6 +274,15 @@ def get_human_move(board, player):
                 print("Invalid move. Try again.")
         except ValueError:
             print("Invalid input. Please enter two integers separated by a space.")
+
+def positions_jouables(board, player):
+    positions = []
+    for x in range(8):
+        for y in range(8):
+            if is_valid_move(board, x, y, player)[0]:
+                positions.append((x, y))
+    return positions
+
 
 # Fonction principale pour jouer au jeu
 def play_game():
