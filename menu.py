@@ -1,6 +1,7 @@
 import pygame
 import sys
 import gamemodes
+import choixia1
 
 # Initialisation de Pygame
 pygame.init()
@@ -64,7 +65,8 @@ def main():
                             # Ici, vous pouvez lancer votre jeu Joueur vs. Joueur
                         elif selected_option == 1:
                             print("Lancement du jeu Joueur vs. IA")
-                            gamemodes.jeuPvAI()
+                            choixia1.main()
+                            # gamemodes.jeuPvAI()
                             # Ici, vous pouvez lancer votre jeu Joueur vs. IA
                         elif selected_option == 2:
                             print("Lancement du jeu IA vs. IA")

@@ -263,7 +263,7 @@ def jeuPvAI():
         if player_turn == 'B':
             timeout = time.time() + 5  # 2 secondes de time-out pour l'IA
             possible_moves = othello_game.positions_jouables(board, 'B')
-            result = othello_game.minmax_with_memory(board, 3, True, 'B', timeout, possible_moves)
+            result = othello_game.minmax_with_memory(board, 5, True, 'B', timeout, possible_moves)
             print(result)
             if result is None or result[1] is None or result[1][0] is None or result[1][1] is None or result[0] is None:
                 afficher_victoire(board, 'Timeout')

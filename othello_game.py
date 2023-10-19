@@ -118,119 +118,11 @@ def has_valid_move(board, player):
     return False
 
 
-# Algorithme Min-Max avec time-out et mémoire
-# def minmax_with_memory(board, depth, maximizing, player, timeout):
-#     if time.time() > timeout:
-#         return None, None
-    
-#     board_str = ''.join(''.join(row) for row in board) + player
-#     if board_str in memo:
-#         return memo[board_str]
-    
-#     if depth == 0:
-#         score = evaluate_board(board, player)
-#         memo[board_str] = score, None
-#         return score, None
-    
-#     opponent = 'W' if player == 'B' else 'B'
-#     best_move = None
-    
-#     if maximizing:
-#         max_eval = float('-inf')
-#         for x in range(8):
-#             for y in range(8):
-#                 new_board = copy.deepcopy(board)
-#                 if make_move(new_board, x, y, player):
-#                     eval_value, _ = minmax_with_memory(new_board, depth - 1, False, player, timeout)
-#                     if eval_value is None:  # Timeout occurred
-#                         return None, None
-#                     if eval_value > max_eval:
-#                         max_eval = eval_value
-#                         best_move = (x, y)
-#         memo[board_str] = max_eval, best_move
-#         return max_eval, best_move
-#     else:
-#         min_eval = float('inf')
-#         for x in range(8):
-#             for y in range(8):
-#                 new_board = copy.deepcopy(board)
-#                 if make_move(new_board, x, y, opponent):
-#                     eval_value, _ = minmax_with_memory(new_board, depth - 1, True, player, timeout)
-#                     if eval_value is None:  # Timeout occurred
-#                         return None, None
-#                     if eval_value < min_eval:
-#                         min_eval = eval_value
-#                         best_move = (x, y)
-#         memo[board_str] = min_eval, best_move
-#         return min_eval, best_move
-
-# def minmax_with_memory(board, depth, maximizing, player, timeout):
-#     # Vérifie si le temps est écoulé (timeout) et renvoie un résultat vide si c'est le cas
-#     if time.time() > timeout:
-#         return None, None  # Timeout occurred
-
-#     # Convertit le plateau de jeu en une chaîne pour stockage dans la mémoire (hash)
-#     board_str = ''.join(''.join(row) for row in board) + player
-#     # Si la configuration du plateau est déjà en mémoire, renvoie le résultat mémorisé
-#     if board_str in memo:
-#         return memo[board_str]
-
-#     # Cas de base : si la profondeur d'exploration est de zéro, renvoie l'évaluation du plateau actuel
-#     if depth == 0:
-#         score = evaluate_board(board, player)
-#         # Stocke le résultat en mémoire pour éviter de le recalculer
-#         memo[board_str] = score, None
-#         return score, None
-
-#     # Détermine l'opposant du joueur actuel
-#     opponent = 'W' if player == 'B' else 'B'
-#     best_move = None
-#     possible_moves = []  # Liste des mouvements possibles
-
-#     # Si on maximise, c'est le tour du joueur actuel
-#     if maximizing:
-#         max_eval = float('-inf')
-#         for x in range(8):
-#             for y in range(8):
-#                 new_board = copy.deepcopy(board)
-#                 if make_move(new_board, x, y, player):
-#                     # Appelle récursivement la fonction pour évaluer le mouvement
-#                     eval_value, _ = minmax_with_memory(new_board, depth - 1, False, player, timeout)
-#                     if eval_value is None:  # Si un timeout s'est produit, ajoute la position à la liste
-#                         possible_moves.append((x, y))
-#                     elif eval_value > max_eval:
-#                         max_eval = eval_value
-#                         best_move = (x, y)
-#         # Si aucun meilleur mouvement n'a été trouvé, joue la première position possible
-#         if best_move is None and possible_moves:
-#             best_move = possible_moves[0]
-#             # Évalue le plateau actuel pour stockage en mémoire
-#             max_eval = evaluate_board(board, player)
-#         # Stocke le résultat en mémoire
-#         memo[board_str] = max_eval, best_move
-#         return max_eval, best_move
-#     # Si on minimise, c'est le tour de l'opposant
-#     else:
-#         min_eval = float('inf')
-#         for x in range(8):
-#             for y in range(8):
-#                 new_board = copy.deepcopy(board)
-#                 if make_move(new_board, x, y, opponent):
-#                     # Appelle récursivement la fonction pour évaluer le mouvement
-#                     eval_value, _ = minmax_with_memory(new_board, depth - 1, True, player, timeout)
-#                     if eval_value is None:  # Si un timeout s'est produit, ajoute la position à la liste
-#                         possible_moves.append((x, y))
-#                     elif eval_value < min_eval:
-#                         min_eval = eval_value
-#                         best_move = (x, y)
-#         # Si aucun meilleur mouvement n'a été trouvé, joue la première position possible
-#         if best_move is None and possible_moves:
-#             best_move = possible_moves[0]
-#             # Évalue le plateau actuel pour stockage en mémoire
-#             min_eval = evaluate_board(board, player)
-#         # Stocke le résultat en mémoire
-#         memo[board_str] = min_eval, best_move
-#         return min_eval, best_move
+# Fonction d'évaluation simple
+def evaluate_board(board, player):
+    player_score = sum(cell == player for row in board for cell in row)
+    opponent_score = sum(cell != ' ' and cell != player for row in board for cell in row)
+    return player_score - opponent_score
 
 MAX_SCORE = 1000000  # Choisissez une valeur appropriée pour MAX_SCORE
 
@@ -251,20 +143,6 @@ def minmax_with_memory(board, depth, maximizing, player, timeout, possible_moves
         return memo[board_str]
 
     opponent = 'W' if player == 'B' else 'B'
-# Alpha-Beta Pruned Min-Max algorithm with memory and time management
-def alpha_beta_minmax(board, depth, alpha, beta, maximizing, active_player, timeout):
-    if time.time() > timeout:
-        return None, None
-
-    board_str = ''.join(''.join(row) for row in board) + active_player
-    if board_str in transposition_table:
-        return transposition_table[board_str]
-
-    if depth == 0:
-        score = evaluate_board_advanced(board, active_player)
-        transposition_table[board_str] = score, None
-        return score, None
-
     best_move = None
 
     if maximizing:
@@ -284,7 +162,6 @@ def alpha_beta_minmax(board, depth, alpha, beta, maximizing, active_player, time
             max_eval = evaluate_board(board, player)
         memo[board_str] = max_eval, best_move
         return max_eval, best_move
-
     else:
         min_eval = MAX_SCORE
         for move in possible_moves:
@@ -302,8 +179,6 @@ def alpha_beta_minmax(board, depth, alpha, beta, maximizing, active_player, time
             min_eval = evaluate_board(board, player)
         memo[board_str] = min_eval, best_move
         return min_eval, best_move
-
-
     
 # Fonction pour récupérer le mouvement du joueur humain
 def get_human_move(board, player):
@@ -327,8 +202,75 @@ def positions_jouables(board, player):
     return positions
 
 
-# Fonction principale pour jouer au jeu
-def play_game():
+# Alpha-Beta Pruned Min-Max algorithm with memory and time management
+def alpha_beta_minmax(board, depth, alpha, beta, maximizing, active_player, timeout):
+    if time.time() > timeout:
+        return None, None
+
+    board_str = ''.join(''.join(row) for row in board) + active_player
+    if board_str in transposition_table:
+        return transposition_table[board_str]
+
+    if depth == 0:
+        score = evaluate_board_advanced(board, active_player)
+        transposition_table[board_str] = score, None
+        return score, None
+
+    best_move = None
+    current_player = active_player if maximizing else ('W' if active_player == 'B' else 'B')
+
+    if maximizing:
+        max_eval = float('-inf')
+        move_found = False  # Add this line
+        for x in range(8):
+            for y in range(8):
+                new_board = copy.deepcopy(board)
+                move_made = make_move(new_board, x, y, current_player)
+                if move_made:
+                    move_found = True  # Update this flag
+                    eval_value, _ = alpha_beta_minmax(new_board, depth - 1, alpha, beta, False, active_player, timeout)
+                    if eval_value is None:  # Timeout occurred
+                        return None, None
+                    if eval_value > max_eval:
+                        max_eval = eval_value
+                        best_move = (x, y)
+                    alpha = max(alpha, eval_value)
+                    if beta <= alpha:
+                        break
+        if not move_found:  # Check the flag here
+            return evaluate_board_advanced(board, active_player), None
+        transposition_table[board_str] = max_eval, best_move
+        return max_eval, best_move
+
+    else:
+        min_eval = float('inf')
+        move_found = False  # Add this line
+        for x in range(8):
+            for y in range(8):
+                new_board = copy.deepcopy(board)
+                move_made = make_move(new_board, x, y, current_player)
+                if move_made:
+                    move_found = True  # Update this flag
+                    eval_value, _ = alpha_beta_minmax(new_board, depth - 1, alpha, beta, True, active_player, timeout)
+                    if eval_value is None:  # Timeout occurred
+                        return None, None
+                    if eval_value < min_eval:
+                        min_eval = eval_value
+                        best_move = (x, y)
+                    beta = min(beta, eval_value)
+                    if beta <= alpha:
+                        break
+        if not move_found:  # Check the flag hereai
+            return evaluate_board_advanced(board, active_player), None
+        transposition_table[board_str] = min_eval, best_move
+        return min_eval, best_move
+    
+# This will replace your existing `minmax_with_memory` function
+def improved_minmax_with_memory(board, depth, maximizing, active_player, timeout):
+    return alpha_beta_minmax(board, depth, float('-inf'), float('inf'), maximizing, active_player, timeout)
+
+# Main function to play the game human vs AI
+def play_game(player_turn_defined, depth_defined, max_timeout_defined):
     board = init_board()
 
     while True:
@@ -361,7 +303,6 @@ def play_game():
             break
 
         player_turn_defined = 'B' if player_turn_defined == 'W' else 'W'
-
 
 # Main function to play the game AI vs AI
 def play_game_ai_vs_ai(player_turn_defined, depth_defined, max_timeout_defined):
