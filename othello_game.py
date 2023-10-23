@@ -104,17 +104,19 @@ def evaluate_board_advanced(board, player):
 
     return player_score - opponent_score
 
+
 # Mémoire des états déjà traités pour éviter les calculs redondants
 memo = {}
 
+
 def has_valid_move(board, player):
     taille_grille = len(board)
-    
+
     for row in range(taille_grille):
         for col in range(taille_grille):
             if is_valid_move(board, row, col, player)[0]:
                 return True
-    
+
     return False
 
 
@@ -124,7 +126,9 @@ def evaluate_board(board, player):
     opponent_score = sum(cell != ' ' and cell != player for row in board for cell in row)
     return player_score - opponent_score
 
+
 MAX_SCORE = 1000000  # Choisissez une valeur appropriée pour MAX_SCORE
+
 
 def minmax_with_memory(board, depth, maximizing, player, timeout, possible_moves):
     if depth == 0:
@@ -133,7 +137,7 @@ def minmax_with_memory(board, depth, maximizing, player, timeout, possible_moves
     if time.time() >= timeout:
         if not possible_moves:
             return evaluate_board(board, player), (-1, -1)
-        
+
         best_move = possible_moves[0]
         return evaluate_board(board, player), best_move
 
@@ -179,19 +183,6 @@ def minmax_with_memory(board, depth, maximizing, player, timeout, possible_moves
             min_eval = evaluate_board(board, player)
         memo[board_str] = min_eval, best_move
         return min_eval, best_move
-    
-# Fonction pour récupérer le mouvement du joueur humain
-def get_human_move(board, player):
-    while True:
-        try:
-            x, y = map(int, input(f"Enter the coordinates where you want to place your '{player}' (row col): ").split())
-            is_valid, _ = is_valid_move(board, x, y, player)
-            if is_valid:
-                return x, y
-            else:
-                print("Invalid move. Try again.")
-        except ValueError:
-            print("Invalid input. Please enter two integers separated by a space.")
 
 def positions_jouables(board, player):
     positions = []
@@ -264,10 +255,12 @@ def alpha_beta_minmax(board, depth, alpha, beta, maximizing, active_player, time
             return evaluate_board_advanced(board, active_player), None
         transposition_table[board_str] = min_eval, best_move
         return min_eval, best_move
-    
+
+
 # This will replace your existing `minmax_with_memory` function
 def improved_minmax_with_memory(board, depth, maximizing, active_player, timeout):
     return alpha_beta_minmax(board, depth, float('-inf'), float('inf'), maximizing, active_player, timeout)
+
 
 # Main function to play the game human vs AI
 def play_game(player_turn_defined, depth_defined, max_timeout_defined):
@@ -303,6 +296,7 @@ def play_game(player_turn_defined, depth_defined, max_timeout_defined):
             break
 
         player_turn_defined = 'B' if player_turn_defined == 'W' else 'W'
+
 
 # Main function to play the game AI vs AI
 def play_game_ai_vs_ai(player_turn_defined, depth_defined, max_timeout_defined):
