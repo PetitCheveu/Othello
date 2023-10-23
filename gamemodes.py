@@ -198,7 +198,7 @@ def jeuPvAI():
     x_debut = (largeur - (taille_grille * taille_case)) // 2
     y_debut = (hauteur - (taille_grille * taille_case)) // 2
     tour = 0  # Initialisez le décompte des tours
-    pions_noirs = 2  # Initialisez le nombre de pions noirs
+    pions_noirs = 2
     pions_blancs = 2  # Initialisez le nombre de pions blancs
 
     while True:

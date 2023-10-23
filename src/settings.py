@@ -4,8 +4,7 @@ import pygame
 pygame.init()
 
 # Window settings
-WINDOW_WIDTH, WINDOW_HEIGHT = 800, 600
-WINDOW = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+WINDOW_WIDTH, WINDOW_HEIGHT = 800*1.5, 600*1.5
 CAPTION = "Othello"
 
 # Colors
@@ -15,8 +14,18 @@ LIGHT_BLUE = (161, 212, 164)
 BLACK = (0, 0, 0)
 
 # Text settings
-FONT = pygame.font.Font(None, 36)
+FONT = pygame.font.Font(None, 32)
 TITLE_FONT = pygame.font.Font(None, 72)
 
 # Menu settings
 OPTIONS = ["Joueur vs. Joueur", "Joueur vs. IA", "IA vs. IA", "Quitter"]
+
+# Game settings
+BOARD_SIZE = 8
+BOARD_CELL_SIZE = 50
+LEFT_GRID_PADDING = (WINDOW_WIDTH - (BOARD_SIZE * BOARD_CELL_SIZE)) // 2
+TOP_GRID_PADDING = (WINDOW_HEIGHT - (BOARD_SIZE * BOARD_CELL_SIZE)) // 2
+MINIMAX_DEPTH = 2
+MAXIMAL_DEPTH = 10
+AVAILABLE_AIS = ["Alphabeta1", "Alphabeta2", "Minmax"]
+
