@@ -2,7 +2,7 @@ import sys
 
 import pygame
 
-from src import settings, board
+import settings, board
 
 selected_option = None
 cursor_value = settings.MINIMAX_DEPTH

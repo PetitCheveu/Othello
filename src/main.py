@@ -1,6 +1,6 @@
 import pygame
-from src import menu
-from src.board import Board
+import menu
+from board import Board
 
 
 def main():
@@ -23,7 +23,7 @@ def main():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
-
+        
         board.display_board()
         board.display_score()
         clock.tick(10)

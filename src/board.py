@@ -1,6 +1,6 @@
 import pygame
 
-from src import settings
+import settings
 
 
 def init_board():
