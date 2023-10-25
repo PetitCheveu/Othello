@@ -1,44 +1,45 @@
 import copy
 import time
-from player import Player
-import utils
-MAX_SCORE = 1000000  # Choisissez une valeur appropriée pour MAX_SCORE
+from src.players.player import Player
+from src import utils, settings
+
+MAX_SCORE = 1000000
+
 
 class AIPlayer(Player):
 
-    def __init__(self, color, depth, max_timeout, ia_type, evaluating_method):
+    def __init__(self, color, ai_type, evaluating_method, max_timeout=settings.MAX_TIMEOUT, depth=6):
         super().__init__(color)  # AI always plays as 'B'
         self.depth = depth
         self.max_timeout = max_timeout
-        self.ia_type = ia_type
+        self.ai_type = ai_type
         self.evaluating_method = evaluating_method
         self.memo = {}
         self.transposition_table = {}
 
-
     def make_move(self, board):
-        if self.ia_type == "minmax" :
+        if self.ai_type == "minmax":
             possible_moves = utils.positions_jouables(board, self.color)
-            return self.minmax_with_memory(board, self.depth, True, self.color, time.time() + self.max_timeout, possible_moves)
-        elif self.ia_type == "alphabeta" :
+            return self.minmax_with_memory(board, self.depth, True, self.color, time.time() + self.max_timeout,
+                                           possible_moves)
+        elif self.ai_type == "alphabeta":
             return self.improved_minmax_with_memory(board, self.depth, True, self.color, time.time() + self.max_timeout)
 
-    # Fonction d'évaluation simple
     def evaluate_board(self, board, player):
-        if self.evaluating_method == 1 : 
+        if self.evaluating_method == 1:
             return self.evaluate_board_by_position(board, player, 1)
-        elif self.evaluating_method == 2 : 
+        elif self.evaluating_method == 2:
             return self.evaluate_board_by_position(board, player, 2)
-        elif self.evaluating_method == 3 :
+        elif self.evaluating_method == 3:
             return self.evaluate_board_by_score(board, player)
-        elif self.evaluating_method == 4 :
+        elif self.evaluating_method == 4:
             return self.evaluate_board_by_mobility(board, player)
-        
+
     def evaluate_board_by_score(self, board, player):
         player_score = sum(cell == player for row in board for cell in row)
         opponent_score = sum(cell != ' ' and cell != player for row in board for cell in row)
         return player_score - opponent_score
-    
+
     def evaluate_board_by_mobility(self, board, player):
         opponent = 'W' if player == 'B' else 'B'
 
@@ -57,13 +58,13 @@ class AIPlayer(Player):
 
         # Calculer le score en fonction des critères
         score = (
-            mobility_weight * player_mobility +
-            opponent_mobility_weight * opponent_mobility +
-            corner_weight * (player_corners - opponent_corners)
+                mobility_weight * player_mobility +
+                opponent_mobility_weight * opponent_mobility +
+                corner_weight * (player_corners - opponent_corners)
         )
 
         return score
-    
+
     def evaluate_board_by_position(self, board, player, evaluate_method):
         player_score = 0
         opponent_score = 0
@@ -72,25 +73,25 @@ class AIPlayer(Player):
         # Board position values to prioritize corners and edges
         if evaluate_method == 1:
             position_values = [
-                [ 500, -150,  30,  10,  10,  30, -150,  500],
+                [500, -150, 30, 10, 10, 30, -150, 500],
                 [-150, -250, 0, 0, 0, 0, -250, -150],
-                [ 30, 0,  1,  2,  2,  1, 0,  30],
-                [ 10, 0,  2,  16,  16,  2, 0,  10],
-                [ 10, 0,  2,  16,  16,  2, 0,  10],
-                [ 30, 0,  1,  2,  2,  1, 0,  30],
+                [30, 0, 1, 2, 2, 1, 0, 30],
+                [10, 0, 2, 16, 16, 2, 0, 10],
+                [10, 0, 2, 16, 16, 2, 0, 10],
+                [30, 0, 1, 2, 2, 1, 0, 30],
                 [-150, -250, 0, 0, 0, 0, -250, -150],
-                [ 500, -150,  30,  10,  10,  30, -150,  500],
+                [500, -150, 30, 10, 10, 30, -150, 500],
             ]
         elif evaluate_method == 2:
             position_values = [
-                [ 100, -20,  10,  5,  5,  10, -20,  100],
+                [100, -20, 10, 5, 5, 10, -20, 100],
                 [-20, -50, -2, -2, -2, -2, -50, -20],
-                [ 10, -2,  -1,  -1,  -1,  -1, -2,  10],
-                [ 5, -2,  -1,  -1,  -1,  -1, -2,  5],
-                [ 5, -2,  -1,  -1,  -1,  -1, -2,  5],
-                [ 10, -2,  -1,  -1,  -1,  -1, -2,  10],
+                [10, -2, -1, -1, -1, -1, -2, 10],
+                [5, -2, -1, -1, -1, -1, -2, 5],
+                [5, -2, -1, -1, -1, -1, -2, 5],
+                [10, -2, -1, -1, -1, -1, -2, 10],
                 [-20, -50, -2, -2, -2, -2, -50, -20],
-                [ 100, -20,  10,  5,  5,  10, -20,  100],
+                [100, -20, 10, 5, 5, 10, -20, 100],
             ]
 
         for i in range(8):
@@ -101,7 +102,7 @@ class AIPlayer(Player):
                     opponent_score += position_values[i][j]
 
         return player_score - opponent_score
-            
+
     def minmax_with_memory(self, board, depth, maximizing, player, timeout, possible_moves):
         if depth == 0:
             return self.evaluate_board(self, board, player), None
@@ -127,7 +128,8 @@ class AIPlayer(Player):
                 x, y = move
                 new_board = copy.deepcopy(board)
                 if utils.make_move(new_board, x, y, player):
-                    eval_value, _ = self.minmax_with_memory(new_board, depth - 1, False, player, timeout, possible_moves)
+                    eval_value, _ = self.minmax_with_memory(new_board, depth - 1, False, player, timeout,
+                                                            possible_moves)
                     if eval_value is None:
                         possible_moves.append((x, y))
                     elif eval_value > max_eval:
@@ -155,7 +157,7 @@ class AIPlayer(Player):
                 min_eval = self.evaluate_board(self, board, player)
             self.memo[board_str] = min_eval, best_move
             return min_eval, best_move
-        
+
     def alpha_beta_minmax(self, board, depth, alpha, beta, maximizing, active_player, timeout):
         if time.time() > timeout:
             return None, None
@@ -181,7 +183,8 @@ class AIPlayer(Player):
                     move_made = utils.make_move(new_board, x, y, current_player)
                     if move_made:
                         move_found = True  # Update this flag
-                        eval_value, _ = self.alpha_beta_minmax(new_board, depth - 1, alpha, beta, False, active_player, timeout)
+                        eval_value, _ = self.alpha_beta_minmax(new_board, depth - 1, alpha, beta, False, active_player,
+                                                               timeout)
                         if eval_value is None:  # Timeout occurred
                             return None, None
                         if eval_value > max_eval:
@@ -204,7 +207,8 @@ class AIPlayer(Player):
                     move_made = utils.make_move(new_board, x, y, current_player)
                     if move_made:
                         move_found = True  # Update this flag
-                        eval_value, _ = self.alpha_beta_minmax(new_board, depth - 1, alpha, beta, True, active_player, timeout)
+                        eval_value, _ = self.alpha_beta_minmax(new_board, depth - 1, alpha, beta, True, active_player,
+                                                               timeout)
                         if eval_value is None:  # Timeout occurred
                             return None, None
                         if eval_value < min_eval:
@@ -218,5 +222,5 @@ class AIPlayer(Player):
             self.transposition_table[board_str] = min_eval, best_move
             return min_eval, best_move
 
-    def improved_minmax_with_memory(self,board, depth, maximizing, active_player, timeout):
+    def improved_minmax_with_memory(self, board, depth, maximizing, active_player, timeout):
         return self.alpha_beta_minmax(board, depth, float('-inf'), float('inf'), maximizing, active_player, timeout)

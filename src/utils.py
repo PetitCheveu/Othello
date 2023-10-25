@@ -3,7 +3,7 @@ def is_valid_move(board, x, y, player):
     opponent = 'W' if player == 'B' else 'B'
 
     # Vérifie si la case est déjà occupée
-    if board[x][y] != ' ':
+    if board[x][y] != '_':
         return False, []  # Le coup n'est pas valide, pas de cellules retournées
 
     # Liste des huit directions possibles (voisins)

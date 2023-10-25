@@ -1,6 +1,6 @@
 import pygame
 
-import settings
+from src import settings
 
 
 def init_board():
@@ -21,6 +21,8 @@ def display_background_and_title(title=settings.CAPTION):
         title.get_rect(center=(settings.WINDOW_WIDTH // 2, 50))
     )
 
+    pygame.display.flip()
+
     return window
 
 
@@ -30,6 +32,7 @@ class Board:
         self.window = display_background_and_title()
 
     def display_board(self):
+        self.window = display_background_and_title()
         for row in range(settings.BOARD_SIZE):
             for column in range(settings.BOARD_SIZE):
                 pygame.draw.rect(

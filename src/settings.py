@@ -4,7 +4,7 @@ import pygame
 pygame.init()
 
 # Window settings
-WINDOW_WIDTH, WINDOW_HEIGHT = 800*1.5, 600*1.5
+WINDOW_WIDTH, WINDOW_HEIGHT = 800 * 1.5, 600 * 1.5
 CAPTION = "Othello"
 
 # Colors
@@ -27,15 +27,8 @@ LEFT_GRID_PADDING = (WINDOW_WIDTH - (BOARD_SIZE * BOARD_CELL_SIZE)) // 2
 TOP_GRID_PADDING = (WINDOW_HEIGHT - (BOARD_SIZE * BOARD_CELL_SIZE)) // 2
 MINIMAX_DEPTH = 2
 MAXIMAL_DEPTH = 10
-AVAILABLE_AIS = ["Alphabeta1", "Alphabeta2", "Minmax"]
-
-
-# Game settings
-BOARD_SIZE = 8
-BOARD_CELL_SIZE = 50
-LEFT_GRID_PADDING = (WINDOW_WIDTH - (BOARD_SIZE * BOARD_CELL_SIZE)) // 2
-TOP_GRID_PADDING = (WINDOW_HEIGHT - (BOARD_SIZE * BOARD_CELL_SIZE)) // 2
-MINIMAX_DEPTH = 2
-MAXIMAL_DEPTH = 10
-AVAILABLE_AIS = ["Alphabeta1", "Alphabeta2", "Minmax"]
-
+AVAILABLE_AIS = {
+    "Alphabeta": ["Positionnel1, Positionnel2, Score, Mobilité"],
+    "Minimax": ["Positionnel1, Positionnel2, Score, Mobilité"]
+}
+MAX_TIMEOUT = 10

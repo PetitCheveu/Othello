@@ -2,7 +2,7 @@ import sys
 
 import pygame
 
-import settings, board
+from src import settings, board
 
 selected_option = None
 cursor_value = settings.MINIMAX_DEPTH
@@ -82,14 +82,33 @@ def menu():
 
 
 def display_ai_parameters(title):
-    window = display_menu(title, settings.AVAILABLE_AIS)
+    window = board.display_background_and_title(title)
+
+    for i, option in enumerate(settings.AVAILABLE_AIS.keys()):
+        button = pygame.Rect(
+            settings.WINDOW_WIDTH // 4,
+            150 + i * 80,
+            settings.WINDOW_WIDTH // 2,
+            60
+        )
+
+        if selected_option == i:
+            pygame.draw.rect(window, settings.LIGHT_BLUE, button)
+        else:
+            pygame.draw.rect(window, settings.WHITE, button)
+
+        text = settings.FONT.render(
+            option,
+            True,
+            settings.BLACK)
+        window.blit(text, text.get_rect(center=button.center))
 
     # Display the cursor and its value
     cursor_rect = pygame.Rect(
-        settings.WINDOW_WIDTH // 4,
-        450,
-        settings.WINDOW_WIDTH // 2,
-        60
+            settings.WINDOW_WIDTH // 4,
+            150 + len(settings.AVAILABLE_AIS.keys()) * 80,
+            settings.WINDOW_WIDTH // 2,
+            60
     )
 
     pygame.draw.rect(
@@ -102,14 +121,14 @@ def display_ai_parameters(title):
         window,
         settings.BLACK,
         ((cursor_value - settings.MINIMAX_DEPTH) / (settings.MAXIMAL_DEPTH - settings.MINIMAX_DEPTH) * (
-                cursor_rect.width - 20) + cursor_rect.x + 10,
+                cursor_rect.width - 30) + cursor_rect.x + 10,
          cursor_rect.y + 10,
          10,
          40)
     )
 
     text = settings.FONT.render(
-        f"Nombre : {cursor_value}",
+        f"Profondeur : {cursor_value}",
         True,
         settings.BLACK
     )
@@ -130,7 +149,7 @@ def ai_parameters(title):
 
     cursor_rect = pygame.Rect(
         settings.WINDOW_WIDTH // 4,
-        450,
+        150 + len(settings.AVAILABLE_AIS.keys()) * 80,
         settings.WINDOW_WIDTH // 2,
         60
     )
@@ -176,10 +195,10 @@ def ai_parameters(title):
 
             elif event.type == pygame.MOUSEMOTION and cursor_dragging:
                 x, _ = event.pos
-                cursor_value = int(((max(cursor_rect.left + 10,
-                                         min(cursor_rect.right - 10, x)) - cursor_rect.left - 10) / (
-                                            cursor_rect.width - 20)) * (
-                                           settings.MAXIMAL_DEPTH - settings.MINIMAX_DEPTH) + settings.MINIMAX_DEPTH)
+                cursor_value = round(int(((max(cursor_rect.left + 10,
+                                               min(cursor_rect.right - 10, x)) - cursor_rect.left - 10) / (
+                                                  cursor_rect.width - 20)) * (
+                                                 settings.MAXIMAL_DEPTH - settings.MINIMAX_DEPTH) + settings.MINIMAX_DEPTH) / 2) * 2
 
             elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
                 cursor_dragging = False
