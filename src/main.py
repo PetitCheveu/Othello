@@ -1,70 +1,87 @@
+from time import sleep
+
 import pygame
-from src import menu, utils
 from src.board import Board
 from src.players.ai_player import AIPlayer
 from src.players.human_player import HumanPlayer
+from src.menu import AIConfig, Menu
 
 
 def main():
     clock = pygame.time.Clock()
     pygame.init()
 
-    chosen_game_mode = menu.menu()
+    # Menu
+    menu = Menu()
+    chosen_game_mode = menu.run()
 
-    if chosen_game_mode == "Joueur vs. IA":
-        ai_type1, evaluating_method1, depth1, max_timeout1 = menu.ai_parameters("AI param")
+    # AI Config
+    if chosen_game_mode == "Joueur vs. IA" or chosen_game_mode == "IA vs. IA":
+        ai_config = AIConfig()
+        ai_type, evaluating_method, depth, max_timeout = ai_config.run("First AI param")
+        player2 = AIPlayer(color='W', ai_type=ai_type, evaluating_method=evaluating_method, depth=depth,
+                           max_timeout=max_timeout)
 
-    if chosen_game_mode == "IA vs. IA":
-        ai_type1, evaluating_method1, depth1, max_timeout1 = menu.ai_parameters("First AI param")
-        ai_type2, evaluating_method2, depth2, max_timeout2 = menu.ai_parameters("Second AI param")
+        if chosen_game_mode == "IA vs. IA":
+            ai_type, evaluating_method, depth, max_timeout = ai_config.run("Second AI param")
+            player1 = AIPlayer(color='B', ai_type=ai_type, evaluating_method=evaluating_method, depth=depth,
+                               max_timeout=max_timeout)
 
-    board = Board()
+        else:
+            player1 = HumanPlayer('B')
 
-    if chosen_game_mode == "Joueur vs. Joueur":
+    else:
         player1 = HumanPlayer('B')
         player2 = HumanPlayer('W')
 
-    elif chosen_game_mode == "Joueur vs. IA":
-        player1 = HumanPlayer('B')
-        player2 = AIPlayer(
-            color='W',
-            ai_type=ai_type1,
-            evaluating_method=evaluating_method1,
-            depth=depth1,
-            max_timeout=max_timeout1
-        )
-
-    elif chosen_game_mode == "IA vs. IA":
-        player1 = AIPlayer(
-            color='B',
-            ai_type=ai_type1,
-            evaluating_method=evaluating_method1,
-            depth=depth1,
-            max_timeout=max_timeout1
-        )
-        player2 = AIPlayer(
-            color='W',
-            ai_type=ai_type2,
-            evaluating_method=evaluating_method2,
-            depth=depth2,
-            max_timeout=max_timeout2
-        )
+    board = Board()
 
     while True:
-        board.display_board()
-        board.display_score()
-        board.board = player1.make_move(board.board)
+        move_made = False
+        turn_skipped = False
 
-        if not utils.has_valid_move(board.board, player2.color):
-            break
+        while not move_made:
+            board.display_board()
+            board.display_score()
+            if player1.make_move(board):
+                move_made = True
+                turn_skipped = False
+            else:
+                board.display_invalid_move()
+                sleep(0.3)
 
-        board.display_board()
-        board.display_score()
-        board.board = player2.make_move(board.board)
+        if len(board.available_cells(player2.color)) == 0:
+            if turn_skipped  or board.board_is_full():
+                board.display_winner()
+                sleep(5)
+                break
+            else:
+                turn_skipped = True
 
-        if not utils.has_valid_move(board.board, player1.color):
-            break
+        if player1 is AIPlayer:
+            sleep(0.5)
 
+        move_made = False
+        while not move_made:
+            board.display_board()
+            board.display_score()
+            if player2.make_move(board):
+                move_made = True
+                turn_skipped = False
+            else:
+                board.display_invalid_move()
+                sleep(0.3)
+
+        if len(board.available_cells(player1.color)) == 0:
+            if turn_skipped or board.board_is_full():
+                board.display_winner()
+                sleep(5)
+                break
+            else:
+                turn_skipped = True
+
+        if player2 is AIPlayer:
+            sleep(0.5)
         clock.tick(10)
 
 

@@ -31,4 +31,5 @@ AVAILABLE_AIS = {
     "Alphabeta": ["Positionnel1", "Positionnel2", "Score", "Mobilité"],
     "Minimax": ["Positionnel1", "Positionnel2", "Score", "Mobilité"]
 }
-MAX_TIMEOUT = 10
+MAX_TIMEOUT = 60
+MIN_TIMEOUT = 1
