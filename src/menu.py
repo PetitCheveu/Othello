@@ -5,6 +5,7 @@ import pygame
 from src import settings, board
 
 selected_option = None
+selected_ai = None
 cursor_value = settings.MINIMAX_DEPTH
 
 
@@ -58,21 +59,13 @@ def menu():
                     )
 
                     if button.collidepoint(x, y):
-                        if selected_option == 0:
-                            print("Lancement du jeu Joueur vs. Joueur")
-                            return "PVP"
-
-                        elif selected_option == 1:
-                            print("Lancement du jeu Joueur vs. IA")
-                            return "PVIA"
-
-                        elif selected_option == 2:
-                            print("Lancement du jeu IA vs. IA")
-                            return "IAVIA"
-
-                        elif selected_option == 3:
+                        if selected_option == 3:
                             pygame.quit()
                             sys.exit()
+
+                        else:
+                            print(f"Lancement du jeu {settings.OPTIONS[selected_option]}")
+                            return settings.OPTIONS[selected_option]
 
         if not playing:
             display_menu()
@@ -81,13 +74,17 @@ def menu():
         clock.tick(10)
 
 
-def display_ai_parameters(title):
+def display_ai_parameters(title, selected_ai):
     window = board.display_background_and_title(title)
+    offset = 0
 
     for i, option in enumerate(settings.AVAILABLE_AIS.keys()):
+        if selected_ai is not None and i > selected_ai:
+            offset = 40 * len(settings.AVAILABLE_AIS[list(settings.AVAILABLE_AIS.keys())[selected_ai]])
+
         button = pygame.Rect(
             settings.WINDOW_WIDTH // 4,
-            150 + i * 80,
+            150 + i * 80 + offset,
             settings.WINDOW_WIDTH // 2,
             60
         )
@@ -97,18 +94,42 @@ def display_ai_parameters(title):
         else:
             pygame.draw.rect(window, settings.WHITE, button)
 
-        text = settings.FONT.render(
+        sub_text = settings.FONT.render(
             option,
             True,
             settings.BLACK)
-        window.blit(text, text.get_rect(center=button.center))
+        window.blit(sub_text, sub_text.get_rect(center=button.center))
+
+    if selected_ai is not None:
+        ai_name = list(settings.AVAILABLE_AIS.keys())[selected_ai]
+        eval_methods = settings.AVAILABLE_AIS[ai_name]
+
+        for i, eval_method in enumerate(eval_methods):
+            sub_button = pygame.Rect(
+                settings.WINDOW_WIDTH // 3,
+                180 + selected_ai * 80 + (i + 1) * 40,
+                settings.WINDOW_WIDTH // 3,
+                30
+            )
+            if sub_button.collidepoint(pygame.mouse.get_pos()):
+                pygame.draw.rect(window, settings.LIGHT_BLUE, sub_button)
+            else:
+                pygame.draw.rect(window, settings.WHITE, sub_button)
+
+            sub_text = settings.FONT.render(
+                eval_method,
+                True,
+                settings.BLACK)
+            window.blit(sub_text, sub_text.get_rect(center=sub_button.center))
 
     # Display the cursor and its value
     cursor_rect = pygame.Rect(
-            settings.WINDOW_WIDTH // 4,
-            150 + len(settings.AVAILABLE_AIS.keys()) * 80,
-            settings.WINDOW_WIDTH // 2,
-            60
+        settings.WINDOW_WIDTH // 4,
+        150 + len(settings.AVAILABLE_AIS.keys()) * 80 + (40 * len(settings.AVAILABLE_AIS[
+                                                                      list(settings.AVAILABLE_AIS.keys())[
+                                                                          selected_ai]]) if selected_ai is not None else 0),
+        settings.WINDOW_WIDTH // 2,
+        60
     )
 
     pygame.draw.rect(
@@ -127,35 +148,39 @@ def display_ai_parameters(title):
          40)
     )
 
-    text = settings.FONT.render(
+    sub_text = settings.FONT.render(
         f"Profondeur : {cursor_value}",
         True,
         settings.BLACK
     )
 
     window.blit(
-        text,
-        text.get_rect(center=cursor_rect.center)
+        sub_text,
+        sub_text.get_rect(center=cursor_rect.center)
     )
 
 
 def ai_parameters(title):
     global selected_option
     global cursor_value
+    global selected_ai
     cursor_dragging = False
     playing = False
     pygame.display.set_caption(settings.CAPTION)
     clock = pygame.time.Clock()
 
-    cursor_rect = pygame.Rect(
-        settings.WINDOW_WIDTH // 4,
-        150 + len(settings.AVAILABLE_AIS.keys()) * 80,
-        settings.WINDOW_WIDTH // 2,
-        60
-    )
-
     while True:
         for event in pygame.event.get():
+
+            cursor_rect = pygame.Rect(
+                settings.WINDOW_WIDTH // 4,
+                150 + len(settings.AVAILABLE_AIS.keys()) * 80 + (40 * len(settings.AVAILABLE_AIS[
+                                                                              list(
+                                                                                  settings.AVAILABLE_AIS.keys())[
+                                                                                  selected_ai]]) if selected_ai is not None else 0),
+                settings.WINDOW_WIDTH // 2,
+                60
+            )
 
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -165,30 +190,42 @@ def ai_parameters(title):
                 x, y = event.pos
 
                 for selected_option, option in enumerate(settings.AVAILABLE_AIS):
+                    offset = 0
+
+                    if selected_ai is not None and selected_option > selected_ai:
+                        offset = 40 * len(settings.AVAILABLE_AIS[list(settings.AVAILABLE_AIS.keys())[selected_ai]])
 
                     button = pygame.Rect(
                         settings.WINDOW_WIDTH // 4,
-                        150 + selected_option * 80,
+                        150 + selected_option * 80 + offset,
                         settings.WINDOW_WIDTH // 2,
                         60
                     )
 
                     if button.collidepoint(x, y):
-                        if selected_option == 0:
-                            print("Lancement d'Alphabeta1 avec nombre =", cursor_value)
-                            return "Alphabeta1", cursor_value
+                        if selected_ai == selected_option:
+                            selected_ai = None
+                        else:
+                            selected_ai = selected_option
+                        break
 
-                        elif selected_option == 1:
-                            print("Lancement d'Alphabeta2 avec nombre =", cursor_value)
-                            return "Alphabeta2", cursor_value
+                if selected_ai is not None:
+                    ai_name = list(settings.AVAILABLE_AIS.keys())[selected_ai]
+                    eval_methods = settings.AVAILABLE_AIS[ai_name]
 
-                        elif selected_option == 2:
-                            print("Lancement de Minmax avec nombre =", cursor_value)
-                            return "Minmax", cursor_value
-
-                        elif selected_option == 3:
-                            pygame.quit()
-                            sys.exit()
+                    for i, eval_method in enumerate(eval_methods):
+                        sub_button = pygame.Rect(
+                            settings.WINDOW_WIDTH // 3,
+                            180 + selected_ai * 80 + (i + 1) * 40,
+                            settings.WINDOW_WIDTH // 3,
+                            30
+                        )
+                        if sub_button.collidepoint(x, y):
+                            print("Lancement de l'IA", ai_name,
+                                  "avec la méthode d'évaluation", eval_method,
+                                  "et la profondeur", cursor_value)
+                            reset_interface()
+                            return ai_name, eval_method, cursor_value, settings.MAX_TIMEOUT
 
                 if cursor_rect.collidepoint(x, y):
                     cursor_dragging = True
@@ -204,7 +241,16 @@ def ai_parameters(title):
                 cursor_dragging = False
 
         if not playing:
-            display_ai_parameters(title)
+            display_ai_parameters(title, selected_ai)
 
         pygame.display.flip()
         clock.tick(10)
+
+
+def reset_interface():
+    global selected_option
+    global cursor_value
+    global selected_ai
+    selected_option = None
+    cursor_value = settings.MINIMAX_DEPTH
+    selected_ai = None
