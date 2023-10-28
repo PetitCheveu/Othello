@@ -25,6 +25,8 @@ class HumanPlayer(Player):
                     row = int((y - settings.TOP_GRID_PADDING) // settings.BOARD_CELL_SIZE)
                     column = int((x - settings.LEFT_GRID_PADDING) // settings.BOARD_CELL_SIZE)
 
+                    if row < 0 or row >= settings.BOARD_SIZE or column < 0 or column >= settings.BOARD_SIZE:
+                        return False
                     if board.add_move_to_board(row, column, self.color):
                         self.move_made = True
                         return True

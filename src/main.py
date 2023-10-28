@@ -4,7 +4,7 @@ import pygame
 from src.board import Board
 from src.players.ai_player import AIPlayer
 from src.players.human_player import HumanPlayer
-from src.menu import AIConfig, Menu
+from src.menu import AIConfig, Menu, AIVisibility
 
 
 def main():
@@ -14,6 +14,8 @@ def main():
     # Menu
     menu = Menu()
     chosen_game_mode = menu.run()
+    show_ai_moves = False
+    standby_duration = 0.2
 
     # AI Config
     if chosen_game_mode == "Joueur vs. IA" or chosen_game_mode == "IA vs. IA":
@@ -30,59 +32,52 @@ def main():
         else:
             player1 = HumanPlayer('B')
 
+        ai_visibility = AIVisibility()
+        show_ai_moves, standby_duration = ai_visibility.run()
+
     else:
         player1 = HumanPlayer('B')
         player2 = HumanPlayer('W')
 
     board = Board()
+    turn_skipped = False
+    players = [player1, player2]
 
     while True:
-        move_made = False
-        turn_skipped = False
+        for player in players:
+            move_made = False
+            while not move_made:
+                board.display_board()
+                board.display_score()
 
-        while not move_made:
-            board.display_board()
-            board.display_score()
-            if player1.make_move(board):
-                move_made = True
-                turn_skipped = False
-            else:
-                board.display_invalid_move()
-                sleep(0.3)
+                if isinstance(player, AIPlayer):
+                    if chosen_game_mode == "Joueur vs. IA":
+                        move_made = player.make_move(board, standby_duration=standby_duration, show_ai_moves=show_ai_moves, show_score_during_thinking=False)
+                    else:
+                        move_made = player.make_move(board, standby_duration=standby_duration, show_ai_moves=show_ai_moves, show_score_during_thinking=True)
+                else:
+                    move_made = player.make_move(board)
 
-        if len(board.available_cells(player2.color)) == 0:
-            if turn_skipped  or board.board_is_full():
-                board.display_winner()
-                sleep(5)
-                break
-            else:
-                turn_skipped = True
+                if move_made:
+                    turn_skipped = False
+                else:
+                    board.display_invalid_move()
+                    sleep(0.3)
 
-        if player1 is AIPlayer:
-            sleep(0.5)
+                # Vérifiez si des mouvements sont disponibles pour le prochain joueur
+                available_cells = board.available_cells('W' if player.color == 'B' else 'B')
+                if len(available_cells) == 0:
+                    if turn_skipped or board.board_is_full():
+                        board.display_winner()
+                        sleep(5)
+                        return
+                    else:
+                        turn_skipped = True
 
-        move_made = False
-        while not move_made:
-            board.display_board()
-            board.display_score()
-            if player2.make_move(board):
-                move_made = True
-                turn_skipped = False
-            else:
-                board.display_invalid_move()
-                sleep(0.3)
+                if isinstance(player, AIPlayer):
+                    sleep(1)
 
-        if len(board.available_cells(player1.color)) == 0:
-            if turn_skipped or board.board_is_full():
-                board.display_winner()
-                sleep(5)
-                break
-            else:
-                turn_skipped = True
-
-        if player2 is AIPlayer:
-            sleep(0.5)
-        clock.tick(10)
+                clock.tick(10)
 
 
 if __name__ == "__main__":

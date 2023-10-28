@@ -262,3 +262,114 @@ class AIConfig:
                                               min(cursor_rect.right - 10, x)) - cursor_rect.left - 10) / (
                                                  cursor_rect.width - 20)) * (
                                                 cursor['max_value'] - cursor['min_value']) + cursor['min_value']))
+
+
+class AIVisibility:
+    def __init__(self):
+        self.selected_option = None
+        self.buttons = []
+        self.options = ["Voir les coups de l'IA", "Ne pas voir les coups de l'IA"]
+        self.cursor_dragging = None
+        self.cursor = {'name': 'Durée (ms)', 'value': 200, 'min_value': 100, 'max_value': 3000}
+
+    def update_buttons(self):
+        self.buttons = []
+        for i, _ in enumerate(self.options):
+            button = pygame.Rect(
+                settings.WINDOW_WIDTH // 4,
+                90 + i * 80,
+                settings.WINDOW_WIDTH // 2,
+                60
+            )
+            self.buttons.append(button)
+
+    def display_menu(self):
+        window = board.display_background_and_title("Visibilité de l'IA")
+        for i, option in enumerate(self.options):
+            button = self.buttons[i]
+            if self.selected_option == i:
+                pygame.draw.rect(window, settings.LIGHT_BLUE, button)
+            else:
+                pygame.draw.rect(window, settings.WHITE, button)
+
+            text = settings.FONT.render(
+                option,
+                True,
+                settings.BLACK)
+            window.blit(text, text.get_rect(center=button.center))
+
+        # Add cursor for duration
+        cursor_rect = pygame.Rect(
+            settings.WINDOW_WIDTH // 4,
+            250,  # Adjust this value as needed
+            settings.WINDOW_WIDTH // 2,
+            60
+        )
+        pygame.draw.rect(window, settings.WHITE, cursor_rect)
+
+        pygame.draw.rect(
+            window,
+            settings.BLACK,
+            (
+                (self.cursor['value'] - self.cursor['min_value']) / (
+                            self.cursor['max_value'] - self.cursor['min_value']) * (
+                        cursor_rect.width - 30) + cursor_rect.x + 10,
+                cursor_rect.y + 10,
+                10,
+                40
+            )
+        )
+
+        sub_text = settings.FONT.render(
+            f"{self.cursor['name']}: {self.cursor['value']}",
+            True,
+            settings.BLACK
+        )
+        window.blit(sub_text, sub_text.get_rect(center=cursor_rect.center))
+
+        return window
+
+    def run(self):
+        pygame.display.set_caption("Visibilité de l'IA")
+        clock = pygame.time.Clock()
+
+        while True:
+            self.update_buttons()
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    x, y = event.pos
+                    for i, button in enumerate(self.buttons):
+                        if button.collidepoint(x, y):
+                            self.selected_option = i
+                            # Return a tuple (bool, int) where bool is whether to show AI moves, int is the duration
+                            return self.selected_option == 0, self.cursor['value']/1000
+                elif event.type == pygame.MOUSEMOTION and self.cursor_dragging is not None:
+                    x, _ = event.pos
+                    self.handle_cursor_drag(x)
+
+                elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                    self.cursor_dragging = None
+
+            self.display_menu()
+
+            pygame.display.flip()
+            clock.tick(10)
+
+    def handle_cursor_drag(self, x):
+        print("Cursor dragged")
+        if self.cursor_dragging is not None:
+            cursor_rect = pygame.Rect(
+                settings.WINDOW_WIDTH // 4,
+                250,  # Adjust this value as needed
+                settings.WINDOW_WIDTH // 2,
+                60
+            )
+            self.cursor['value'] = round(int(((max(cursor_rect.left + 10,
+                                                   min(cursor_rect.right - 10, x)) - cursor_rect.left - 10) / (
+                                                      cursor_rect.width - 20)) * (
+                                                     self.cursor['max_value'] - self.cursor['min_value']) + self.cursor[
+                                                 'min_value']))

@@ -27,9 +27,10 @@ def display_background_and_title(title=settings.CAPTION):
 
 
 class Board:
-    def __init__(self):
+    def __init__(self, to_display=True):
         self.board = init_board()
-        self.window = display_background_and_title()
+        if to_display:
+            self.window = display_background_and_title()
 
     def display_board(self):
         self.window = display_background_and_title()
@@ -56,6 +57,29 @@ class Board:
                     ),
                     settings.BOARD_CELL_SIZE // 2 - 5
                 )
+
+        pygame.display.flip()
+
+    def display_ia_thinking(self, show_score_during_thinking=False):
+        self.display_board()
+        if show_score_during_thinking:
+            self.display_score()
+        thinking_text = settings.FONT.render(
+            "L'IA réfléchit...",
+            True,
+            settings.BLACK
+        )
+        thinking_rect = pygame.Rect(
+            0,
+            settings.WINDOW_HEIGHT - 100,
+            settings.WINDOW_WIDTH,
+            50
+        )
+
+        self.window.blit(
+            thinking_text,
+            thinking_text.get_rect(center=thinking_rect.center)
+        )
 
         pygame.display.flip()
 
