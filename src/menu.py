@@ -266,6 +266,7 @@ class AIConfig:
 
 class AIVisibility:
     def __init__(self):
+        self.final_selection = None
         self.selected_option = None
         self.buttons = []
         self.options = ["Voir les coups de l'IA", "Ne pas voir les coups de l'IA"]
@@ -301,7 +302,7 @@ class AIVisibility:
         # Add cursor for duration
         cursor_rect = pygame.Rect(
             settings.WINDOW_WIDTH // 4,
-            250,  # Adjust this value as needed
+            250,
             settings.WINDOW_WIDTH // 2,
             60
         )
@@ -332,6 +333,7 @@ class AIVisibility:
     def run(self):
         pygame.display.set_caption("Visibilité de l'IA")
         clock = pygame.time.Clock()
+        self.final_selection = None
 
         while True:
             self.update_buttons()
@@ -345,9 +347,19 @@ class AIVisibility:
                     for i, button in enumerate(self.buttons):
                         if button.collidepoint(x, y):
                             self.selected_option = i
-                            # Return a tuple (bool, int) where bool is whether to show AI moves, int is the duration
-                            return self.selected_option == 0, self.cursor['value']/1000
-                elif event.type == pygame.MOUSEMOTION and self.cursor_dragging is not None:
+                            self.final_selection = (self.selected_option == 0, self.cursor['value']/1000)
+
+                    # Check if the cursor rectangle is clicked
+                    cursor_rect = pygame.Rect(
+                        settings.WINDOW_WIDTH // 4,
+                        250,
+                        settings.WINDOW_WIDTH // 2,
+                        60
+                    )
+                    if cursor_rect.collidepoint(x, y):
+                        self.cursor_dragging = True  # Initialize cursor_dragging
+
+                elif event.type == pygame.MOUSEMOTION and self.cursor_dragging:
                     x, _ = event.pos
                     self.handle_cursor_drag(x)
 
@@ -359,12 +371,14 @@ class AIVisibility:
             pygame.display.flip()
             clock.tick(10)
 
+            if self.final_selection is not None:
+                return self.final_selection
+
     def handle_cursor_drag(self, x):
-        print("Cursor dragged")
         if self.cursor_dragging is not None:
             cursor_rect = pygame.Rect(
                 settings.WINDOW_WIDTH // 4,
-                250,  # Adjust this value as needed
+                250,
                 settings.WINDOW_WIDTH // 2,
                 60
             )

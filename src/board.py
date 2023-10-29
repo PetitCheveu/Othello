@@ -162,6 +162,26 @@ class Board:
 
         pygame.display.flip()
 
+    def display_turn_skipped(self):
+        turn_skipped_text = settings.FONT.render(
+            "Aucun coup n'est disponible ! Vous passez votre tour.",
+            True,
+            settings.BLACK
+        )
+        turn_skipped_rect = pygame.Rect(
+            0,
+            settings.WINDOW_HEIGHT - 100,
+            settings.WINDOW_WIDTH,
+            50
+        )
+
+        self.window.blit(
+            turn_skipped_text,
+            turn_skipped_text.get_rect(center=turn_skipped_rect.center)
+        )
+
+        pygame.display.flip()
+
     def available_cells(self, player):
         positions = []
         for x in range(8):

@@ -16,7 +16,6 @@ class AIPlayer(Player):
         self.max_timeout = max_timeout
         self.ai_type = ai_type
         self.evaluating_method = evaluating_method
-        self.memo = {}
         self.transposition_table = {}
 
     def make_move(self, board, show_ai_moves=True, show_score_during_thinking=False, standby_duration=0.2):
@@ -26,7 +25,7 @@ class AIPlayer(Player):
         if self.ai_type == list(settings.AVAILABLE_AIS.keys())[0]:
             available_cells = board.available_cells(self.color)
 
-            move_to_make = self.minmax_with_memory(
+            move_to_make = self.min_max(
                 board=board,
                 maximizing=True,
                 timeout=time.time() + self.max_timeout,
@@ -39,7 +38,7 @@ class AIPlayer(Player):
 
         elif self.ai_type == list(settings.AVAILABLE_AIS.keys())[1]:
 
-            move_to_make = self.alpha_beta_minmax(
+            move_to_make = self.alpha_beta(
                 board=board,
                 alpha=float('-inf'),
                 beta=float('inf'),
@@ -60,8 +59,8 @@ class AIPlayer(Player):
         else:
             return False
 
-    def minmax_with_memory(self, board, maximizing, timeout, available_moves, depth, standby_duration=0.2,
-                           show_ai_moves=True, show_score_during_thinking=False):
+    def min_max(self, board, maximizing, timeout, available_moves, depth, standby_duration=0.2,
+                show_ai_moves=True, show_score_during_thinking=False):
         print("Entering minmax with memory")
         if show_ai_moves:
             board.display_ia_thinking(show_score_during_thinking)
@@ -86,9 +85,9 @@ class AIPlayer(Player):
             print("best move: ", best_move)
             return board.evaluate_board(self), best_move
 
-        if board_str in self.memo:
+        if board_str in self.transposition_table:
             print("board in memo")
-            return self.memo[board_str]
+            return self.transposition_table[board_str]
 
         if maximizing:
             max_eval = -MAX_SCORE
@@ -99,11 +98,9 @@ class AIPlayer(Player):
                 new_board.board = copy.deepcopy(board.board)
 
                 if new_board.add_move_to_board(x, y, self.color):
-                    eval_value, _ = self.minmax_with_memory(new_board, False, timeout,
-                                                            available_moves, depth=depth - 1,
-                                                            standby_duration=standby_duration,
-                                                            show_ai_moves=show_ai_moves,
-                                                            show_score_during_thinking=show_score_during_thinking)
+                    eval_value, _ = self.min_max(new_board, False, timeout, available_moves, depth=depth - 1,
+                                                 standby_duration=standby_duration, show_ai_moves=show_ai_moves,
+                                                 show_score_during_thinking=show_score_during_thinking)
 
                     if eval_value is None:
                         available_moves.append((x, y))
@@ -116,7 +113,7 @@ class AIPlayer(Player):
                 best_move = available_moves[0]
                 max_eval = board.evaluate_board(self)
 
-            self.memo[board_str] = max_eval, best_move
+            self.transposition_table[board_str] = max_eval, best_move
 
             print("Maximizing. Maximal evaluation: ", max_eval)
             print("best move: ", best_move)
@@ -132,11 +129,9 @@ class AIPlayer(Player):
                 new_board.board = copy.deepcopy(board.board)
 
                 if new_board.add_move_to_board(x, y, opponent):
-                    eval_value, _ = self.minmax_with_memory(new_board, True, timeout,
-                                                            available_moves, depth=depth - 1,
-                                                            standby_duration=standby_duration,
-                                                            show_ai_moves=show_ai_moves,
-                                                            show_score_during_thinking=show_score_during_thinking)
+                    eval_value, _ = self.min_max(new_board, True, timeout, available_moves, depth=depth - 1,
+                                                 standby_duration=standby_duration, show_ai_moves=show_ai_moves,
+                                                 show_score_during_thinking=show_score_during_thinking)
 
                     if eval_value is None:
                         available_moves.append((x, y))
@@ -149,15 +144,15 @@ class AIPlayer(Player):
                 best_move = available_moves[0]
                 min_eval = board.evaluate_board(self)
 
-            self.memo[board_str] = min_eval, best_move
+            self.transposition_table[board_str] = min_eval, best_move
 
             print("Minimizing. Minimal evaluation: ", min_eval)
             print("best move: ", best_move)
 
             return min_eval, best_move
 
-    def alpha_beta_minmax(self, board, alpha, beta, maximizing, timeout, depth, standby_duration=0.2,
-                          show_ai_moves=True, show_score_during_thinking=False):
+    def alpha_beta(self, board, alpha, beta, maximizing, timeout, depth, standby_duration=0.2,
+                   show_ai_moves=True, show_score_during_thinking=False):
         print("Entering alpha beta minmax")
         if show_ai_moves:
             board.display_ia_thinking(show_score_during_thinking)
@@ -166,19 +161,20 @@ class AIPlayer(Player):
         board_str = ''.join(''.join(row) for row in board.board) + self.color
         best_move = None
         current_player = self.color if maximizing else ('W' if self.color == 'B' else 'B')
+        best_move_so_far = None
 
-        if time.time() > timeout:
+        """if time.time() > timeout:
             print("timeout")
-            return None, None
+            return None, None"""
 
         if board_str in self.transposition_table:
-            print("board in transposition table")
+            print("board in transposition table : ", self.transposition_table[board_str])
             return self.transposition_table[board_str]
 
         if depth == 0:
             print("depth = 0")
             score = board.evaluate_board(self)
-            self.transposition_table[board_str] = score, None
+            # self.transposition_table[board_str] = score, None
             return score, None
 
         if maximizing:
@@ -194,25 +190,19 @@ class AIPlayer(Player):
 
                     if move_made:
                         move_found = True  # Update this flag
-                        eval_value, _ = self.alpha_beta_minmax(
-                            board=new_board,
-                            alpha=alpha,
-                            beta=beta,
-                            maximizing=False,
-                            timeout=timeout,
-                            depth=depth - 1,
-                            standby_duration=standby_duration,
-                            show_ai_moves=show_ai_moves,
-                            show_score_during_thinking=show_score_during_thinking
-                        )
+                        eval_value, _ = self.alpha_beta(board=new_board, alpha=alpha, beta=beta, maximizing=False,
+                                                        timeout=timeout, depth=depth - 1,
+                                                        standby_duration=standby_duration, show_ai_moves=show_ai_moves,
+                                                        show_score_during_thinking=show_score_during_thinking)
 
                         if eval_value is None:  # Timeout occurred
                             print("timeout")
-                            return None, None
+                            return max_eval, best_move_so_far
 
                         if eval_value > max_eval:
                             max_eval = eval_value
                             best_move = (x, y)
+                            best_move_so_far = best_move
 
                         alpha = max(alpha, eval_value)
 
@@ -243,25 +233,19 @@ class AIPlayer(Player):
                     if move_made:
                         move_found = True
 
-                        eval_value, _ = self.alpha_beta_minmax(
-                            board=new_board,
-                            alpha=alpha,
-                            beta=beta,
-                            maximizing=True,
-                            timeout=timeout,
-                            depth=depth - 1,
-                            standby_duration=standby_duration,
-                            show_ai_moves=show_ai_moves,
-                            show_score_during_thinking=show_score_during_thinking
-                        )
+                        eval_value, _ = self.alpha_beta(board=new_board, alpha=alpha, beta=beta, maximizing=True,
+                                                        timeout=timeout, depth=depth - 1,
+                                                        standby_duration=standby_duration, show_ai_moves=show_ai_moves,
+                                                        show_score_during_thinking=show_score_during_thinking)
 
                         if eval_value is None:  # Timeout occurred
                             print("timeout")
-                            return None, None
+                            return min_eval, best_move_so_far
 
                         if eval_value < min_eval:
                             min_eval = eval_value
                             best_move = (x, y)
+                            best_move_so_far = best_move
 
                         beta = min(beta, eval_value)
 

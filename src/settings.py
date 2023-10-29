@@ -28,8 +28,8 @@ TOP_GRID_PADDING = (WINDOW_HEIGHT - (BOARD_SIZE * BOARD_CELL_SIZE)) // 2
 MINIMAX_DEPTH = 2
 MAXIMAL_DEPTH = 10
 AVAILABLE_AIS = {
-    "Alphabeta": ["Positionnel1", "Positionnel2", "Score", "Mobilité"],
-    "Minimax": ["Positionnel1", "Positionnel2", "Score", "Mobilité"]
+    "Minimax": ["Positionnel1", "Positionnel2", "Score", "Mobilité"],
+    "Alphabeta": ["Positionnel1", "Positionnel2", "Score", "Mobilité"]
 }
 MAX_TIMEOUT = 60
 MIN_TIMEOUT = 1

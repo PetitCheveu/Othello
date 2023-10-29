@@ -46,38 +46,43 @@ def main():
     while True:
         for player in players:
             move_made = False
-            while not move_made:
+
+            available_cells = board.available_cells(player.color)
+            if len(available_cells) == 0:
+                if turn_skipped:
+                    board.display_winner()
+                    sleep(5)
+                    return
+                else:
+                    turn_skipped = True
+                    board.display_turn_skipped()
+                    sleep(0.3)
+                    break
+
+            while not move_made:  # Boucle pour gérer les coups invalides
                 board.display_board()
                 board.display_score()
 
                 if isinstance(player, AIPlayer):
                     if chosen_game_mode == "Joueur vs. IA":
-                        move_made = player.make_move(board, standby_duration=standby_duration, show_ai_moves=show_ai_moves, show_score_during_thinking=False)
+                        move_made = player.make_move(board, standby_duration=standby_duration,
+                                                     show_ai_moves=show_ai_moves, show_score_during_thinking=False)
                     else:
-                        move_made = player.make_move(board, standby_duration=standby_duration, show_ai_moves=show_ai_moves, show_score_during_thinking=True)
+                        move_made = player.make_move(board, standby_duration=standby_duration,
+                                                     show_ai_moves=show_ai_moves, show_score_during_thinking=True)
                 else:
                     move_made = player.make_move(board)
 
-                if move_made:
-                    turn_skipped = False
-                else:
+                if not move_made:
                     board.display_invalid_move()
                     sleep(0.3)
 
-                # Vérifiez si des mouvements sont disponibles pour le prochain joueur
-                available_cells = board.available_cells('W' if player.color == 'B' else 'B')
-                if len(available_cells) == 0:
-                    if turn_skipped or board.board_is_full():
-                        board.display_winner()
-                        sleep(5)
-                        return
-                    else:
-                        turn_skipped = True
+            turn_skipped = False
 
-                if isinstance(player, AIPlayer):
-                    sleep(1)
+            if isinstance(player, AIPlayer):
+                sleep(1)
 
-                clock.tick(10)
+            clock.tick(10)
 
 
 if __name__ == "__main__":
